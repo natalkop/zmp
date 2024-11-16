@@ -1,0 +1,103 @@
+#include <iostream>
+#include <dlfcn.h>
+#include <cassert>
+#include <string>
+#include <cstdio>
+#include <memory>
+#include "AbstractInterp4Command.hh"
+#include <sstream>
+
+using namespace std;
+
+
+bool ExecPreprocesor( const char *NazwaPliku, istringstream &IStrm4Cmds )
+{
+string Cmd4Preproc = "cpp -P ";
+char Line[LINE SIZE];
+ostringstream OTmpStrm;
+Cmd4Preproc += NazwaPliku;
+FILE∗ pProc = popen(Cmd4Preproc.c str(),"r");
+if (!pProc) return false;
+while (fgets(Line,LINE SIZE,pProc)) {
+OTmpStrm << Line;
+}
+IStrm4Cmds.str(OTmpStrm.str());
+ cout << IStrm4Cmds.str() << endl;  // Test
+return pclose(pProc) == 0;
+}
+
+
+
+int main()
+{
+ {
+  void *pLibHnd_Move = dlopen("libInterp4Move.so",RTLD_LAZY);
+  AbstractInterp4Command *(*pCreateCmd_Move)(void);
+  void *pFun;
+
+  if (!pLibHnd_Move) {
+    cerr << "!!! Brak biblioteki: Interp4Move.so" << endl;
+    return 1;
+  }
+
+
+  pFun = dlsym(pLibHnd_Move,"CreateCmd");
+  if (!pFun) {
+    cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
+    return 1;
+  }
+  pCreateCmd_Move = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
+
+
+  AbstractInterp4Command *pCmd = pCreateCmd_Move();
+
+  cout << endl;
+  cout << pCmd->GetCmdName() << endl;
+  cout << endl;
+  pCmd->PrintSyntax();
+  cout << endl;
+  pCmd->PrintCmd();
+  cout << endl;
+  
+  delete pCmd;
+
+  dlclose(pLibHnd_Move);
+ }
+
+ {
+  void *pLibHnd_Rotate = dlopen("libInterp4Rotate.so",RTLD_LAZY);
+  AbstractInterp4Command *(*pCreateCmd_Rotate)(void);
+  void *pFun;
+
+  if (!pLibHnd_Rotate) {
+    cerr << "!!! Brak biblioteki: Interp4Rotate.so" << endl;
+    return 1;
+  }
+
+
+  pFun = dlsym(pLibHnd_Rotate,"CreateCmd");
+  if (!pFun) {
+    cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
+    return 1;
+  }
+  pCreateCmd_Rotate = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
+
+
+  AbstractInterp4Command *pCmd = pCreateCmd_Rotate();
+
+  cout << endl;
+  cout << pCmd->GetCmdName() << endl;
+  cout << endl;
+  pCmd->PrintSyntax();
+  cout << endl;
+  pCmd->PrintCmd();
+  cout << endl;
+
+  delete pCmd;
+
+  dlclose(pLibHnd_Rotate);
+ }
+
+ ExecPreprocesor(komendy_sterowania.cmd, cout); 
+ 
+}
