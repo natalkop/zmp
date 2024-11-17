@@ -13,6 +13,7 @@
 #include "xmlinterp.hh"
 #include <list>
 #include <vector>
+#include "LibInterface.hh"
 
 #define LINE_SIZE 500
 
@@ -115,14 +116,23 @@ bool ExecPreprocesor( const char *NazwaPliku, istringstream &IStrm4Cmds )
 	return pclose(pProc) == 0;
 }
 
-void *pLibHnd_Move = dlopen("libInterp4Move.so", RTLD_LAZY);
+/*void *pLibHnd_Move = dlopen("libInterp4Move.so", RTLD_LAZY);
 void *pLibHnd_Rotate = dlopen("libInterp4Rotate.so", RTLD_LAZY);
 void *pLibHnd_Pause = dlopen("libInterp4Pause.so", RTLD_LAZY);
 void *pLibHnd_Set = dlopen("libInterp4Set.so",RTLD_LAZY);
-vector<void*> tablica = {pLibHnd_Move, pLibHnd_Rotate, pLibHnd_Pause, pLibHnd_Set};
+vector<void*> tablica = {pLibHnd_Move, pLibHnd_Rotate, pLibHnd_Pause, pLibHnd_Set};*/
 
 int main()
 {
+
+ std::map<std::string, std::shared_ptr<LibInterface>> libMap;
+
+ // Инициализируем коллекцию
+ libMap["Move"] = std::make_shared<LibInterface>("libInterp4Move.so", "Move");
+ libMap["Rotate"] = std::make_shared<LibInterface>("libInterp4Rotate.so", "Rotate");
+ libMap["Set"] = std::make_shared<LibInterface>("libInterp4Set.so", "Set");
+ libMap["Pause"] = std::make_shared<LibInterface>("libInterp4Pause.so", "Pause");
+
  /*{
   void *pLibHnd_Move = dlopen("libInterp4Move.so",RTLD_LAZY);
   AbstractInterp4Command *(*pCreateCmd_Move)(void);
@@ -265,141 +275,75 @@ int main()
  const char* filename = "komendy_sterowania.cmd";
  istringstream IStrm4Cmds;
 
+
+
  if (ExecPreprocesor(filename, IStrm4Cmds)) {
      string word;
      while (IStrm4Cmds >> word) {
                 if (word == "Move") {
-		    //void *pLibHnd_Move = dlopen("libinterp4Move", RTLD_LAZY);
-                    AbstractInterp4Command *(*pCreateCmd_Move)(void);
-                    void *pFun;
-
-                    if (!tablica[0]) {
-                       cerr << "!!! Brak biblioteki: Interp4Move.so" << endl;
-                       return 1;
+		    auto it = libMap.find("Move");
+                    if (it != libMap.end()) {
+                        // Создаём команду
+                        shared_ptr<AbstractInterp4Command> command = it->second->CreateCommand();
+			command->ReadParams(IStrm4Cmds);
+			cout << endl;
+                        cout << command->GetCmdName() << endl;
+                        cout << endl;
+                        command->PrintSyntax();
+                        cout << endl;
+                        command->PrintCmd();
+                        cout << endl;
+                    } else {
+                        cerr << "Polecenie nie znalezione" << endl;
                     }
-
-
-                    pFun = dlsym(tablica[0],"CreateCmd");
-                    if (!pFun) {
-                       cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
-                       return 1;
-                    }
-                    pCreateCmd_Move = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
-
-
-                    AbstractInterp4Command *pCmd = pCreateCmd_Move();
-
-		    pCmd->ReadParams(IStrm4Cmds);
-                    cout << endl;
-                    cout << pCmd->GetCmdName() << endl;
-                    cout << endl;
-                    pCmd->PrintSyntax();
-                    cout << endl;
-                    pCmd->PrintCmd();
-                    cout << endl;
-  
-                    delete pCmd;
-
-                    //dlclose(pLibHnd_Move);
                 } else if (word == "Rotate") {
-		    void *pLibHnd_Rotate = dlopen("libInterp4Rotate.so", RTLD_LAZY);
-                    AbstractInterp4Command *(*pCreateCmd_Rotate)(void);
-                    void *pFun;
-
-                    if (!pLibHnd_Rotate) {
-                       cerr << "!!! Brak biblioteki: Interp4Rotate.so" << endl;
-                       return 1;
+		    auto it = libMap.find("Rotate");
+                    if (it != libMap.end()) {
+                       // Создаём команду
+                       shared_ptr<AbstractInterp4Command> command = it->second->CreateCommand();
+		       command->ReadParams(IStrm4Cmds);
+		       cout << endl;
+                       cout << command->GetCmdName() << endl;
+                       cout << endl;
+                       command->PrintSyntax();
+                       cout << endl;
+                       command->PrintCmd();
+                       cout << endl;
+                    } else {
+                       cerr << "Polecenie nie znalezione" << endl;
                     }
-
-
-                    pFun = dlsym(pLibHnd_Rotate,"CreateCmd");
-                    if (!pFun) {
-                       cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
-                       return 1;
-                    }
-                    pCreateCmd_Rotate = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
-
-
-                    AbstractInterp4Command *pCmd = pCreateCmd_Rotate();
-
-		    pCmd->ReadParams(IStrm4Cmds);
-                    cout << endl;
-                    cout << pCmd->GetCmdName() << endl;
-                    cout << endl;
-                    pCmd->PrintSyntax();
-                    cout << endl;
-                    pCmd->PrintCmd();
-                    cout << endl;
-  
-                    delete pCmd;
-
-                    dlclose(pLibHnd_Rotate);
                 } else if (word == "Pause") {
-	            void *pLibHnd_Pause = dlopen("libInterp4Pause.so", RTLD_LAZY);
-                    AbstractInterp4Command *(*pCreateCmd_Pause)(void);
-                    void *pFun;
-
-                    if (!pLibHnd_Pause) {
-                       cerr << "!!! Brak biblioteki: Interp4Pause.so" << endl;
-                       return 1;
+		    auto it = libMap.find("Pause");
+                    if (it != libMap.end()) {
+                       // Создаём команду
+                       shared_ptr<AbstractInterp4Command> command = it->second->CreateCommand();
+		       command->ReadParams(IStrm4Cmds);
+		       cout << endl;
+		       cout << command->GetCmdName() << endl;
+		       cout << endl;
+                       command->PrintSyntax();
+		       cout << endl;
+                       command->PrintCmd();
+		       cout << endl;
+                    } else {
+                       cerr << "Polecenie nie znalezione" << endl;
                     }
-
-
-                    pFun = dlsym(pLibHnd_Pause,"CreateCmd");
-                    if (!pFun) {
-                       cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
-                       return 1;
-                    }
-                    pCreateCmd_Pause = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
-
-
-                    AbstractInterp4Command *pCmd = pCreateCmd_Pause();
-
-		    pCmd->ReadParams(IStrm4Cmds);
-                    cout << endl;
-                    cout << pCmd->GetCmdName() << endl;
-                    cout << endl;
-                    pCmd->PrintSyntax();
-                    cout << endl;
-                    pCmd->PrintCmd();
-                    cout << endl;
-  
-                    delete pCmd;
-
-                    dlclose(pLibHnd_Pause);
                 } else if (word == "Set") {
-		    void *pLibHnd_Set = dlopen("libInterp4Set.so", RTLD_LAZY);
-                    AbstractInterp4Command *(*pCreateCmd_Set)(void);
-                    void *pFun;
-
-                    if (!pLibHnd_Set) {
-                       cerr << "!!! Brak biblioteki: Interp4Set.so" << endl;
-                       return 1;
+		    auto it = libMap.find("Set");
+                    if (it != libMap.end()) {
+                       // Создаём команду
+                       shared_ptr<AbstractInterp4Command> command = it->second->CreateCommand();
+                       command->ReadParams(IStrm4Cmds);
+		       cout << endl;
+		       cout << command->GetCmdName() << endl;
+		       cout << endl;
+                       command->PrintSyntax();
+		       cout << endl;
+                       command->PrintCmd();
+		       cout << endl;
+                    } else {
+                       cerr << "Polecenie nie znalezione" << endl;
                     }
-
-
-                    pFun = dlsym(pLibHnd_Set,"CreateCmd");
-                    if (!pFun) {
-                       cerr << "!!! Nie znaleziono funkcji CreateCmd" << endl;
-                       return 1;
-                    }
-                    pCreateCmd_Set = reinterpret_cast<AbstractInterp4Command* (*)(void)>(pFun);
-
-
-                    AbstractInterp4Command *pCmd = pCreateCmd_Set();
-
-		    pCmd->ReadParams(IStrm4Cmds);
-                    cout << endl;
-                    cout << pCmd->GetCmdName() << endl;
-                    cout << endl;
-                    pCmd->PrintSyntax();
-                    cout << endl;
-                    pCmd->PrintCmd();
-                    cout << endl;
-  
-                    delete pCmd;
-
-                    dlclose(pLibHnd_Set);
 		} else {
                     cout << "Nieznane polecenie: " << word << endl;
                 }
