@@ -31,7 +31,8 @@ obj/xmlinterp.o: src/xmlinterp.cpp inc/xmlinterp.hh
 	g++ -c ${CPPFLAGS} -o obj/xmlinterp.o src/xmlinterp.cpp
 
 obj/main.o: src/main.cpp inc/AbstractInterp4Command.hh inc/AbstractScene.hh\
-            inc/AbstractComChannel.hh inc/xmlinterp.hh inc/LibInterface.hh
+            inc/AbstractComChannel.hh inc/xmlinterp.hh inc/LibInterface.hh inc/Set4LibInterfaces.hh\
+	    inc/Cuboid.hh inc/ComChannel.hh inc/Scene.hh
 	g++ -c ${CPPFLAGS} -o obj/main.o src/main.cpp
 
 doc:
