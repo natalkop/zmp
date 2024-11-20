@@ -4,17 +4,26 @@
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
+#include "Vector3D.hh"
 
 
 
 using namespace std;
 
+void printCube2(const Cube& cube) {
+    std::cout << "Cube Name: " << cube.Name << std::endl;
+    std::cout << "  Shift: [" << cube.Shift << "]" << std::endl;
+    std::cout << "  Scale: [" << cube.Scale << "]" << std::endl;
+    std::cout << "  Rotation (deg): [" << cube.RotXYZ_deg << "]" << std::endl;
+    std::cout << "  Translation (m): [" << cube.Trans_m << "]" << std::endl;
+    std::cout << "  RGB: [" << cube.RGB << "]" << std::endl;
+}
 
 /*!
  * Konstruktor klasy. Tutaj należy zainicjalizować wszystkie
  * dodatkowe pola.
  */
-XMLInterp4Config::XMLInterp4Config(Configuration &rConfig)
+XMLInterp4Config::XMLInterp4Config(Configuration &rConfig): Config(rConfig)
 {
 }
 
@@ -58,7 +67,7 @@ void XMLInterp4Config::ProcessLibAttrs(const xercesc::Attributes  &rAttrs)
  if (strcmp(sParamName,"Name")) {
       cerr << "Zla nazwa atrybutu dla Lib" << endl;
       exit(1);
- }         
+ } 
 
  XMLSize_t  Size = 0;
  char* sLibName = xercesc::XMLString::transcode(rAttrs.getValue(Size));
@@ -66,7 +75,14 @@ void XMLInterp4Config::ProcessLibAttrs(const xercesc::Attributes  &rAttrs)
  cout << "  Nazwa biblioteki: " << sLibName << endl;
 
  // Tu trzeba wpisać własny kod ...
-
+ Config.setLib(sLibName);
+ 
+ /*const vector<string>& libs = Config.getLibs();
+    for (size_t i = 0; i < libs.size(); ++i) {
+        std::cout << libs[i] << " ";
+    }
+    cout << endl;*/
+ 
  xercesc::XMLString::release(&sParamName);
  xercesc::XMLString::release(&sLibName);
 }
@@ -90,13 +106,19 @@ void XMLInterp4Config::ProcessCubeAttrs(const xercesc::Attributes  &rAttrs)
   */
 
  char* sName_Name = xercesc::XMLString::transcode(rAttrs.getQName(0));
- char* sName_Scale = xercesc::XMLString::transcode(rAttrs.getQName(1));
- char* sName_RGB = xercesc::XMLString::transcode(rAttrs.getQName(2));
+ char* sName_Shift = xercesc::XMLString::transcode(rAttrs.getQName(1));
+ char* sName_Scale = xercesc::XMLString::transcode(rAttrs.getQName(2));
+ char* sName_RotXYZ_deg = xercesc::XMLString::transcode(rAttrs.getQName(3));
+ char* sName_Trans_m = xercesc::XMLString::transcode(rAttrs.getQName(4));
+ char* sName_RGB = xercesc::XMLString::transcode(rAttrs.getQName(5));
 
  XMLSize_t  Index = 0;
  char* sValue_Name    = xercesc::XMLString::transcode(rAttrs.getValue(Index));
- char* sValue_Scale = xercesc::XMLString::transcode(rAttrs.getValue(1));
- char* sValue_RGB     = xercesc::XMLString::transcode(rAttrs.getValue(2));
+ char* sValue_Shift    = xercesc::XMLString::transcode(rAttrs.getValue(1));
+ char* sValue_Scale = xercesc::XMLString::transcode(rAttrs.getValue(2));
+ char* sValue_RotXYZ_deg = xercesc::XMLString::transcode(rAttrs.getValue(3));
+ char* sValue_Trans_m = xercesc::XMLString::transcode(rAttrs.getValue(4));
+ char* sValue_RGB     = xercesc::XMLString::transcode(rAttrs.getValue(5));
 
 
  //-----------------------------------------------------------------------------
@@ -104,7 +126,10 @@ void XMLInterp4Config::ProcessCubeAttrs(const xercesc::Attributes  &rAttrs)
  //
  cout << " Atrybuty:" << endl
       << "     " << sName_Name << " = \"" << sValue_Name << "\"" << endl
+      << "     " << sName_Shift << " = \"" << sValue_Shift << "\"" << endl
       << "     " << sName_Scale << " = \"" << sValue_Scale << "\"" << endl
+      << "     " << sName_RotXYZ_deg << " = \"" << sValue_RotXYZ_deg << "\"" << endl
+      << "     " << sName_Trans_m << " = \"" << sValue_Trans_m << "\"" << endl
       << "     " << sName_RGB << " = \"" << sValue_RGB << "\"" << endl   
       << endl; 
  //-----------------------------------------------------------------------------
@@ -121,25 +146,105 @@ void XMLInterp4Config::ProcessCubeAttrs(const xercesc::Attributes  &rAttrs)
  // IStrm >> Scale;
  //
  istringstream   IStrm;
+ Cube cube;
  
- IStrm.str(sValue_Scale);
- double  Sx,Sy,Sz;
+ cube.Name = sValue_Name;
+ 
+ IStrm.str(sValue_Shift);
+ Vector3D Shift;
 
- IStrm >> Sx >> Sy >> Sz;
+ IStrm >> Shift;
  if (IStrm.fail()) {
      cerr << " Blad!!!" << endl;
  } else {
      cout << " Czytanie wartosci OK!!!" << endl;
-     cout << "     " << Sx << "  " << Sy << "  " << Sz << endl;
+     cout << Shift << endl;
+     cube.Shift=Shift;
  }
+ 
+ IStrm.clear();  // Resetuje stan strumienia (np. usuwa flagę błędu)
+ IStrm.str("");  // Usuwa dotychczasową zawartość bufora
+ 
+ IStrm.str(sValue_Scale);
+ Vector3D Scale;
+
+ IStrm >> Scale;
+ if (IStrm.fail()) {
+     cerr << " Blad!!!" << endl;
+ } else {
+     cout << " Czytanie wartosci OK!!!" << endl;
+     cout << Scale << endl;
+     cube.Scale=Scale;
+ }
+ 
+ IStrm.clear();
+ IStrm.str("");
+ 
+ IStrm.str(sValue_RotXYZ_deg);
+ Vector3D RotXYZ_deg;
+
+ IStrm >> RotXYZ_deg;
+ if (IStrm.fail()) {
+     cerr << " Blad!!!" << endl;
+ } else {
+     cout << " Czytanie wartosci OK!!!" << endl;
+     cout << RotXYZ_deg << endl;
+     cube.RotXYZ_deg=RotXYZ_deg;
+ }
+ 
+ IStrm.clear();
+ IStrm.str("");
+ 
+ IStrm.str(sValue_Trans_m);
+ Vector3D Trans_m;
+
+ IStrm >> Trans_m;
+ if (IStrm.fail()) {
+     cerr << " Blad!!!" << endl;
+ } else {
+     cout << " Czytanie wartosci OK!!!" << endl;
+     cout << Trans_m << endl;
+     cube.Trans_m=Trans_m;
+ }
+ 
+ IStrm.clear();
+ IStrm.str("");
+ 
+ IStrm.str(sValue_RGB);
+ Vector3D RGB;
+
+ IStrm >> RGB;
+ if (IStrm.fail()) {
+     cerr << " Blad!!!" << endl;
+ } else {
+     cout << " Czytanie wartosci OK!!!" << endl;
+     cout << RGB << endl;
+     cube.RGB=RGB;
+ }
+ 
+ IStrm.clear();
+ IStrm.str("");
 
  // Tu trzeba wstawić odpowiednio własny kod ...
+ Config.setCube(cube);
+ 
+ std::cout << "Zawartość Cubes:" << std::endl;
+    for (const auto& cube : Config.getCubes()) {
+        printCube2(cube);
+        std::cout << std::endl; // Oddzielanie kolejnych Cube
+    }
 
  xercesc::XMLString::release(&sName_Name);
+ xercesc::XMLString::release(&sName_Shift);
  xercesc::XMLString::release(&sName_Scale);
+ xercesc::XMLString::release(&sName_RotXYZ_deg);
+ xercesc::XMLString::release(&sName_Trans_m);
  xercesc::XMLString::release(&sName_RGB);
  xercesc::XMLString::release(&sValue_Name);
+ xercesc::XMLString::release(&sValue_Shift);
  xercesc::XMLString::release(&sValue_Scale);
+ xercesc::XMLString::release(&sValue_RotXYZ_deg);
+ xercesc::XMLString::release(&sValue_Trans_m);
  xercesc::XMLString::release(&sValue_RGB);
 }
 

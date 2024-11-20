@@ -1,3 +1,6 @@
+
+
+
 __start__: obj __lines_for_space__ interp xmlinterp4config __plugin__
 	export LD_LIBRARY_PATH="./libs"; ./interp
 
@@ -32,7 +35,8 @@ obj/xmlinterp.o: src/xmlinterp.cpp inc/xmlinterp.hh
 
 obj/main.o: src/main.cpp inc/AbstractInterp4Command.hh inc/AbstractScene.hh\
             inc/AbstractComChannel.hh inc/xmlinterp.hh inc/LibInterface.hh inc/Set4LibInterfaces.hh\
-	    inc/Cuboid.hh inc/ComChannel.hh inc/Scene.hh
+	    inc/Cuboid.hh inc/ComChannel.hh inc/Scene.hh\
+	    inc/Port.hh inc/AccessControl.hh
 	g++ -c ${CPPFLAGS} -o obj/main.o src/main.cpp
 
 doc:
